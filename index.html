@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>BodyClick — Biel (Ultra)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#071029; --card-grad-from:#071426; --card-grad-to:#0b2230;
+      --accent:#ff2d2d; --accent-2:#b30000; --muted:#98a8b6; --white:#e9f0fb;
+      --success:#10b981; --radius:14px;
+      font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg), #0f1724);color:var(--white);-webkit-font-smoothing:antialiased}
+    .wrap{max-width:980px;margin:18px auto;padding:18px;position:relative}
+    header{display:flex;gap:16px;align-items:flex-start}
+    .brand{display:flex;gap:14px;align-items:center}
+    .logo{width:74px;height:74px;border-radius:18px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#071029;font-weight:900;font-size:34px;flex:0 0 auto}
+    .title h1{margin:0;font-size:20px;font-weight:800}
+    .title p{margin:6px 0 0;color:var(--muted);font-size:13px;max-width:480px}
+    .badge{margin-left:auto;background:linear-gradient(90deg,var(--accent),var(--accent-2));padding:8px 12px;border-radius:12px;color:#071029;font-weight:800;font-size:12px}
+
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:18px;margin-top:18px;align-items:start}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding:16px;border-radius:var(--radius);box-shadow:0 12px 30px rgba(2,6,23,0.6)}
+    .days{display:flex;gap:10px;flex-wrap:nowrap;overflow:auto;padding-bottom:6px}
+    .pill{flex:0 0 auto;padding:10px 14px;border-radius:12px;background:transparent;border:1px solid rgba(255,255,255,0.04);min-width:78px;text-align:center;color:var(--muted);font-weight:600;cursor:pointer;transition:all .18s ease}
+    .pill.active{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#071029;box-shadow:0 8px 24px rgba(179,0,0,0.12);transform:translateY(-4px)}
+    .progress-bar{height:10px;background:rgba(255,255,255,0.03);border-radius:999px;overflow:hidden}
+    .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));width:0%}
+    .exercise{display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:12px;margin-bottom:10px;background:rgba(255,255,255,0.01);transition:transform .18s cubic-bezier(.2,.9,.2,1), box-shadow .18s}
+    .exercise.pulse{transform:scale(1.02);box-shadow:0 18px 42px rgba(179,0,0,0.14)}
+    .ex-left{display:flex;gap:12px;align-items:center;min-width:0}
+    .checkwrap{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.02);cursor:pointer}
+    .checkwrap input{width:20px;height:20px;cursor:pointer}
+    .ex-title strong{display:block;font-size:15px}
+    .ex-title .meta{color:var(--muted);font-size:13px}
+    .status{padding:6px 8px;border-radius:10px;font-size:12px;background:rgba(255,255,255,0.02);color:var(--muted)}
+    .btn{padding:10px 14px;border-radius:12px;border:none;cursor:pointer;font-weight:800}
+    .btn.primary{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#071029}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+    footer{margin-top:18px;text-align:center;color:var(--muted);font-size:13px}
+
+    /* calendar */
+    .tabs{display:flex;gap:8px;margin-bottom:12px}
+    .tabs button{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--muted);cursor:pointer}
+    .tabs button.active{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#071029;border-color:transparent}
+    .calendar{margin-top:8px}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+    .cal-cell{height:72px;border-radius:10px;background:rgba(255,255,255,0.01);border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;justify-content:flex-start;padding:10px;font-size:13px;position:relative;cursor:pointer;transition:transform .12s ease}
+    .cal-cell:hover{transform:translateY(-4px)}
+    .cal-cell .date{font-weight:700}
+    .cal-cell.marked{background:linear-gradient(180deg,#2b0b0b,#3b0f0f);border-color:rgba(255,90,90,0.2)}
+    .cal-badge{position:absolute;right:8px;bottom:8px;background:rgba(255,255,255,0.06);padding:6px 8px;border-radius:8px;font-weight:800;color:#fff;font-size:12px}
+
+    /* modal base */
+    .modal-backdrop{position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(2,6,23,0.7);display:none;align-items:center;justify-content:center;z-index:9999}
+    .modal{background:linear-gradient(180deg,var(--card-grad-from),var(--card-grad-to));padding:18px;border-radius:12px;width:360px;box-shadow:0 30px 70px rgba(2,6,23,0.7);color:var(--white);transform:translateY(24px);opacity:0;transition:all .28s cubic-bezier(.2,.9,.2,1)}
+    .modal.show{transform:translateY(0);opacity:1}
+    .modal .head{display:flex;gap:12px;align-items:center}
+    .modal .icon{width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900}
+    .icon.success{background:linear-gradient(90deg,#16a34a,#10b981);color:#071029}
+    .icon.info{background:linear-gradient(90deg,#3b82f6,#60a5fa);color:#071029}
+    .icon.warn{background:linear-gradient(90deg,#f59e0b,#f97316);color:#071029}
+    .icon.danger{background:linear-gradient(90deg,#ef4444,#b91c1c);color:#071029}
+    .modal h3{margin:0;font-size:18px}
+    .modal p{margin:8px 0 0;color:var(--muted)}
+    .modal .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:14px}
+    .modal .actions .btn{min-width:84px}
+
+    /* particles canvas overlay */
+    #particlesCanvas{position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:998}
+
+    /* small screens */
+    @media(max-width:640px){
+      .grid{grid-template-columns:1fr}
+      .modal{width:92%}
+      .cal-cell{height:60px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap" id="appWrap">
+    <header>
+      <div class="brand">
+        <div class="logo">B</div>
+        <div class="title">
+          <h1>BodyClick — <span style="color:var(--accent)">Biel</span></h1>
+          <p>App offline de treino — agora com som e partículas. Marca, salva e celebra cada treino.</p>
+        </div>
+      </div>
+      <div class="badge">MONSTRO MODE</div>
+    </header>
+
+    <div class="grid">
+      <main>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+            <div style="min-width:0">
+              <div style="color:var(--muted);font-size:13px">Treino atual</div>
+              <div id="currentTitle" style="font-weight:800;font-size:16px;">Segunda – Peito + Tríceps</div>
+            </div>
+            <div style="text-align:right;color:var(--muted);min-width:120px">
+              <div style="font-size:13px">Peso: <strong style="color:#fff">Indefinido</strong></div>
+              <div style="font-size:13px">Objetivo: <strong style="color:#fff">+massa</strong></div>
+            </div>
+          </div>
+
+          <div style="margin-top:14px" class="days" id="daysRow"></div>
+
+          <div style="margin-top:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div style="color:var(--muted);font-size:13px">Progresso hoje</div>
+                <div id="todayCount" style="font-weight:800">0/0</div>
+              </div>
+              <div style="margin-top:8px" class="progress-bar"><div class="progress-fill" id="progressBar"></div></div>
+            </div>
+
+            <div style="width:160px;flex:0 0 160px">
+              <button class="btn primary" id="exportBtn" style="width:100%">Exportar</button>
+              <button class="btn ghost" id="resetBtn" style="width:100%;margin-top:8px">Resetar Semana</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="exerciseList" style="margin-top:14px"></div>
+
+        <div class="card" style="margin-top:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-weight:800">Timer do treino</div>
+              <div style="color:var(--muted);font-size:13px">Use entre séries</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button class="btn ghost" id="startTimer">Iniciar 60s</button>
+              <div id="timerDisplay" style="color:var(--muted);font-weight:800">00:00</div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+
+      <aside>
+        <div class="card">
+          <h3 style="margin-top:0">Instruções rápidas</h3>
+          <ol style="color:var(--muted);font-size:13px;padding-left:18px;margin:8px 0">
+            <li>Escolhe o dia no topo.</li>
+            <li>Clica no link do vídeo pra ver a execução.</li>
+            <li>Marca o checkbox quando terminar o exercício.</li>
+            <li>Progresso salva no aparelho (offline).</li>
+          </ol>
+          <hr style="border:none;border-top:1px solid rgba(255,255,255,0.03);margin:12px 0"/>
+
+          <div style="margin-top:12px">
+            <div class="tabs">
+              <button id="tab-program" class="active">Programa</button>
+              <button id="tab-calendar">Calendário</button>
+            </div>
+
+            <div id="program-area">
+              <div style="color:var(--muted);font-size:14px">Escolha um dia e marque os exercícios.</div>
+              <div style="display:flex;justify-content:space-between;margin-top:12px;align-items:center">
+                <div style="color:var(--muted)">Dias marcados no mês</div>
+                <div class="btn primary" id="monthCount" style="padding:8px 10px;font-weight:800">0</div>
+              </div>
+            </div>
+
+            <div id="calendar-area" style="display:none">
+              <div class="calendar">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                  <div><strong id="calMonthLabel"></strong></div>
+                  <div>
+                    <button id="calPrev" class="btn ghost" style="margin-right:6px">◀</button>
+                    <button id="calNext" class="btn ghost">▶</button>
+                  </div>
+                </div>
+                <div class="cal-grid" id="calGrid"></div>
+                <div class="cal-legend">
+                  <div style="color:var(--muted)">Clique no dia para marcar qual série você fez</div>
+                  <div><strong id="monthCompleted">0</strong> dias</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div style="margin-top:12px;display:flex;gap:8px">
+            <button class="btn ghost" id="downloadData">Baixar JSON</button>
+            <input type="file" id="fileInput" style="display:none" accept="application/json" />
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <footer>
+      <div style="color:var(--muted);font-size:13px">App offline — use "Adicionar à Tela de Início"</div>
+    </footer>
+  </div>
+
+  <!-- Particles canvas (overlay) -->
+  <canvas id="particlesCanvas"></canvas>
+
+  <!-- Generic modal backdrop -->
+  <div id="genericModalBackdrop" class="modal-backdrop" aria-hidden="true">
+    <div id="genericModal" class="modal" role="dialog" aria-modal="true">
+      <div class="head">
+        <div id="genericIcon" class="icon info">i</div>
+        <div style="flex:1">
+          <h3 id="genericTitle">Título</h3>
+          <p id="genericText">Texto explicativo</p>
+        </div>
+      </div>
+      <div class="actions" id="genericActions"></div>
+    </div>
+  </div>
+
+  <!-- Mark modal -->
+  <div id="markModalBackdrop" class="modal-backdrop" aria-hidden="true">
+    <div id="markModal" class="modal" role="dialog" aria-modal="true" style="width:360px">
+      <div class="head">
+        <div class="icon info">✍️</div>
+        <div style="flex:1">
+          <h3 id="markTitle">Marcar dia</h3>
+          <p id="markSubtitle" style="color:var(--muted);margin:6px 0 0">Escolhe qual série você fez nesse dia.</p>
+        </div>
+      </div>
+
+      <div style="margin-top:14px">
+        <div class="letters" id="lettersWrap" style="display:flex;gap:8px"></div>
+        <div class="small-muted" style="margin-top:8px;color:var(--muted)">As marcações ficam salvas mesmo se resetar os checks da semana.</div>
+      </div>
+
+      <div class="actions" style="margin-top:16px">
+        <button class="btn ghost" id="markRemoveBtn">Remover</button>
+        <button class="btn primary" id="markSaveBtn">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ============================
+   Áudios (check & success)
+   ============================ */
+const soundCheck = new Audio("https://assets.mixkit.co/active_storage/sfx/1792/1792-preview.mp3"); // tick
+const soundSuccess = new Audio("https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3"); // success
+soundCheck.volume = 0.45;
+soundSuccess.volume = 0.7;
+
+/* ============================
+   Particle system (canvas overlay)
+   - lightweight, burst particles using requestAnimationFrame
+   ============================ */
+const canvas = document.getElementById('particlesCanvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+let dpr = window.devicePixelRatio || 1;
+function resizeCanvas(){
+  dpr = window.devicePixelRatio || 1;
+  canvas.width = window.innerWidth * dpr;
+  canvas.height = window.innerHeight * dpr;
+  canvas.style.width = window.innerWidth + 'px';
+  canvas.style.height = window.innerHeight + 'px';
+  ctx.scale(dpr, dpr);
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function random(min,max){ return Math.random()*(max-min)+min; }
+
+function emitParticles(x,y,color='#ff5a5a',count=18,spread=120,speed=4){
+  for(let i=0;i<count;i++){
+    const angle = random(0,Math.PI*2);
+    const speedRnd = random(speed*0.4,speed*1.4);
+    particles.push({
+      x, y,
+      vx: Math.cos(angle)*speedRnd,
+      vy: Math.sin(angle)*speedRnd - random(0,1.6),
+      life: random(700,1100),
+      born: performance.now(),
+      size: random(4,10),
+      color: color,
+      rot: random(0,Math.PI*2)
+    });
+  }
+}
+
+function updateParticles(now){
+  particles = particles.filter(p => now - p.born < p.life);
+  ctx.clearRect(0,0, canvas.width/dpr, canvas.height/dpr);
+  particles.forEach(p=>{
+    const t = (now - p.born)/p.life;
+    // simple physics
+    p.vy += 0.03; // gravity
+    p.x += p.vx;
+    p.y += p.vy;
+    p.rot += 0.1;
+    ctx.save();
+    ctx.globalAlpha = 1 - t;
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot);
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.ellipse(0,0, p.size*(1 - t), p.size*(1 - t)*0.8, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  });
+}
+
+let rafId = null;
+function loop(now){
+  updateParticles(now);
+  rafId = requestAnimationFrame(loop);
+}
+rafId = requestAnimationFrame(loop);
+
+/* helper: DOM position to page coordinates */
+function getOffset(el){
+  const r = el.getBoundingClientRect();
+  return {x: r.left + r.width/2 + window.scrollX, y: r.top + r.height/2 + window.scrollY, left:r.left, top:r.top};
+}
+
+/* spawn small micro particles for checkbox (compact) */
+function tinyBurstFromElement(el){
+  const off = getOffset(el);
+  emitParticles(off.x, off.y, '#ffd166', 12, 60, 3);
+}
+
+/* ============================
+   Plan data (with video URLs)
+   ============================ */
+const plan = {
+  'Segunda – Peito + Tríceps': [
+    {id: 's1', name:'Supino reto', sets:'4x 8–12', video:'https://www.tiktok.com/@eilucao_/video/7118137335878782214?q=supino%20reto&t=1765240761360'},
+    {id: 's2', name:'Supino inclinado halter', sets:'3x 8–12', video:'https://www.tiktok.com/@bruno_rebustini/video/7538546627338980664'},
+    {id: 's3', name:'Crucifixo com halter', sets:'3x 12', video:'https://www.tiktok.com/@airtonmontee/video/7544474680556653830'},
+    {id: 's5', name:'Crucifixo Maquina', sets:'3x 12–15', video:'https://www.tiktok.com/@marombaniacos/video/7560529018630540600?q=crossover%20na%20maquina&t=1765241002604'},
+    {id: 's6', name:'Tríceps corda', sets:'3x 10–12', video:'https://www.tiktok.com/@doutortreino/video/7567402951233277205'},
+    {id: 's7', name:'Tríceps testa', sets:'3x 10–12', video:'https://www.tiktok.com/@treinadorrafa/video/7349628998080531718'}
+  ],
+  'Terça – Costas + Bíceps': [
+    {id: 't1', name:'Puxada frente / Barra fixa', sets:'4x 8–12', video:'https://www.tiktok.com/@leandroaraujo_/video/7154870377724906758'},
+    {id: 't2', name:'Remada baixa', sets:'3x 10–12', video:'https://www.tiktok.com/@doutortreino/video/7569710593645546772?q=Remada%20baixa&t=1765242394369'},
+    {id: 't3', name:'Remada unilateral', sets:'3x 10–12', video:'https://www.tiktok.com/@fernandocantarelli/video/7283963751315950853?q=Remada%20unilateral&t=1765242410728'},
+    {id: 't4', name:'Puxada neutra', sets:'3x 12', video:'https://www.tiktok.com/@treinadordavis/video/7331187449139318021?q=Puxada%20neutra&t=1765242424068'},
+    {id: 't5', name:'Rosca direta', sets:'3x 8–12', video:'https://www.tiktok.com/@marombaniacos/video/7555602397599501579?q=Rosca%20direta&t=1765242440993'},
+    {id: 't6', name:'Rosca alternada', sets:'3x 10–12', video:'https://www.tiktok.com/@erlonpersonal/video/7543986688637406520?q=Rosca%20alternada&t=1765242454135'}
+  ],
+  'Quinta – Pernas + Glúteo': [
+    {id: 'q1', name:'Agachamento Smith', sets:'4x 8–12', video:'https://www.tiktok.com/@nagatapersonal/video/7529120994691157304?q=Agachamento%20Smith&t=1765242468503'},
+    {id: 'q2', name:'Leg press 45°', sets:'4x 10–12', video:'https://www.tiktok.com/@nagatapersonal/video/7574819198539533586'},
+    {id: 'q3', name:'Cadeira extensora (drop set)', sets:'3x 12–15', video:'https://www.tiktok.com/@fernandocantarelli/video/7330604310742469894'},
+    {id: 'q4', name:'Mesa flexora', sets:'3x 12', video:'https://www.tiktok.com/@fernandocantarelli/video/7294656388129672454?q=Mesa%20flexora&t=1765242504315'},
+    {id: 'q5', name:'Stiff halter', sets:'3x 10–12', video:'https://www.tiktok.com/@dam94110/video/7552162209913163019'},
+    {id: 'q7', name:'Panturrilha em pé', sets:'4x 15–20', video:'https://www.tiktok.com/@fernandocantarelli/video/7494357715746049286'}
+  ],
+  'Sexta – Ombro + Trapézio + Abdômen': [
+    {id: 'f1', name:'Elevação lateral', sets:'4x 12', video:'https://www.tiktok.com/@deltabolic/video/7570556618874604818?q=Eleva%C3%A7%C3%A3o%20lateral&t=1765242576139'},
+    {id: 'f2', name:'Desenvolvimento militar', sets:'3x 8–12', video:'https://www.tiktok.com/@treinadorrafa/video/7309234511332609285?q=Desenvolvimento%20militar&t=1765242588689'},
+    {id: 'f3', name:'Elevação frontal', sets:'3x 12', video:'https://www.tiktok.com/@mundo.maromba31/video/7429446177910820101?q=Eleva%C3%A7%C3%A3o%20frontal&t=1765242608459'},
+    {id: 'f4', name:'Remada alta', sets:'3x 10', video:'https://www.tiktok.com/@leandrotwinoficial/video/7557091391688494392?q=Remada%20alta&t=1765242618317'},
+    {id: 'f5', name:'Encolhimento trapézio', sets:'3x 12', video:'https://www.tiktok.com/@treinadorrafa/video/7315180005972102405?q=Encolhimento%20trap%C3%A9zio&t=1765242636092'},
+    {id: 'f6', name:'Prancha isometria', sets:'3x 30s', video:'https://www.tiktok.com/@acarolnoronha/video/7484647460741188869'},
+    {id: 'f7', name:'Abdominal infra', sets:'3x 15', video:'https://www.tiktok.com/@fernandocantarelli/video/7349535086888406277'}
+  ]
+};
+
+/* ============================
+   Storage keys & helpers
+   ============================ */
+const STORAGE_KEY = 'treino_biel_v3';
+const CAL_KEY = 'treino_biel_calendar_v1';
+function loadData(){ const raw = localStorage.getItem(STORAGE_KEY); return raw? JSON.parse(raw) : {}; }
+function saveData(d){ localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
+function loadCal(){ const raw = localStorage.getItem(CAL_KEY); return raw? JSON.parse(raw) : {}; }
+function saveCal(c){ localStorage.setItem(CAL_KEY, JSON.stringify(c)); }
+
+/* ============================
+   UI refs & state
+   ============================ */
+const days = Object.keys(plan);
+const daysRow = document.getElementById('daysRow');
+const exerciseList = document.getElementById('exerciseList');
+const todayCount = document.getElementById('todayCount');
+const progressBar = document.getElementById('progressBar');
+const currentTitle = document.getElementById('currentTitle');
+let selectedDay = days[0];
+let calDate = new Date();
+
+/* Generic modal elements */
+const genericBackdrop = document.getElementById('genericModalBackdrop');
+const genericModal = document.getElementById('genericModal');
+const genericIcon = document.getElementById('genericIcon');
+const genericTitle = document.getElementById('genericTitle');
+const genericText = document.getElementById('genericText');
+const genericActions = document.getElementById('genericActions');
+
+/* Mark modal elements */
+const markBackdrop = document.getElementById('markModalBackdrop');
+const lettersWrap = document.getElementById('lettersWrap');
+const markSaveBtn = document.getElementById('markSaveBtn');
+const markRemoveBtn = document.getElementById('markRemoveBtn');
+const markTitle = document.getElementById('markTitle');
+const markSubtitle = document.getElementById('markSubtitle');
+
+const LETTERS = [
+  {key:'S', label:'Segunda'},
+  {key:'T', label:'Terça'},
+  {key:'Q', label:'Quarta'},
+  {key:'Qi', label:'Quinta'},
+  {key:'Se', label:'Sexta'}
+];
+
+let activeMarkDate = null;
+let activeSelectedLetter = null;
+
+/* ============================
+   Modal helpers
+   ============================ */
+function showModal({type='info', title='', text='', buttons=[{label:'OK',className:'primary', handler:()=>closeModal()}], autoClose=0}){
+  genericIcon.className = 'icon ' + (type==='success'?'success': type==='warn'?'warn' : type==='danger'?'danger':'info');
+  genericIcon.innerText = type==='success'?'✔': type==='warn'?'!': type==='danger'?'✖':'i';
+  genericTitle.innerText = title;
+  genericText.innerText = text;
+  genericActions.innerHTML = '';
+  buttons.forEach(b=>{
+    const btn = document.createElement('button');
+    btn.className = 'btn ' + (b.className?b.className:'ghost');
+    btn.innerText = b.label;
+    btn.onclick = ()=>{ try{ b.handler(); } catch(e){ console.error(e); } };
+    genericActions.appendChild(btn);
+  });
+  genericBackdrop.style.display = 'flex';
+  setTimeout(()=> genericModal.classList.add('show'), 10);
+  if (autoClose>0) setTimeout(()=> closeModal(), autoClose);
+}
+function closeModal(){ genericModal.classList.remove('show'); setTimeout(()=> genericBackdrop.style.display = 'none', 260); }
+
+/* ============ Mark modal functions ============ */
+function buildLetterButtons(){
+  lettersWrap.innerHTML = '';
+  LETTERS.forEach(l=>{
+    const b = document.createElement('button');
+    b.className = 'btn ghost';
+    b.innerText = l.key;
+    b.style.flex = '1';
+    b.onclick = ()=> {
+      activeSelectedLetter = l.key;
+      Array.from(lettersWrap.children).forEach(x=>x.classList.remove('selected'));
+      b.classList.add('selected');
+    };
+    lettersWrap.appendChild(b);
+  });
+}
+
+function openMarkModal(dateKey){
+  activeMarkDate = dateKey;
+  activeSelectedLetter = null;
+  buildLetterButtons();
+  const cal = loadCal();
+  if (cal[dateKey]){
+    activeSelectedLetter = cal[dateKey];
+    Array.from(lettersWrap.children).forEach(x=>{ if (x.innerText === cal[dateKey]) x.classList.add('selected'); });
+  }
+  markTitle.innerText = 'Marcar dia';
+  markSubtitle.innerText = 'Data: ' + dateKey;
+  markBackdrop.style.display = 'flex';
+  setTimeout(()=> document.getElementById('markModal').classList.add('show'), 10);
+}
+
+function closeMarkModal(){ document.getElementById('markModal').classList.remove('show'); setTimeout(()=> markBackdrop.style.display = 'none', 220); }
+
+markSaveBtn.onclick = ()=>{
+  if (!activeSelectedLetter){
+    showModal({type:'warn', title:'Escolha uma letra', text:'Seleciona S/T/Q/Qi/Se antes de salvar.', buttons:[{label:'Entendi', handler:()=>closeModal()}]});
+    return;
+  }
+  const cal = loadCal();
+  cal[activeMarkDate] = activeSelectedLetter;
+  saveCal(cal);
+  closeMarkModal();
+  renderCalendar(calDate);
+  updateMonthCount();
+
+  // explode particles on the date cell center
+  const cell = findCalendarCellByDate(activeMarkDate);
+  if (cell) {
+    const off = cell.getBoundingClientRect();
+    emitParticles(off.left + off.width/2 + window.scrollX, off.top + off.height/2 + window.scrollY, '#ffd166', 28, 160, 5);
+  } else {
+    emitParticles(window.innerWidth/2, window.innerHeight/2, '#ffd166', 28, 160, 5);
+  }
+
+  // audio
+  try{ soundSuccess.currentTime = 0; soundSuccess.play(); }catch(e){}
+
+  showModal({
+    type:'success',
+    title:'Dia marcado!',
+    text:`Treino: ${activeSelectedLetter} salvo em ${activeMarkDate}`,
+    buttons:[{label:'Fechar', handler:()=>closeModal(), className:'primary'}],
+    autoClose:1800
+  });
+};
+
+markRemoveBtn.onclick = ()=>{
+  const cal = loadCal();
+  if (cal[activeMarkDate]){
+    delete cal[activeMarkDate];
+    saveCal(cal);
+    closeMarkModal();
+    renderCalendar(calDate);
+    updateMonthCount();
+
+    // audio + particles
+    try{ soundSuccess.currentTime = 0; soundSuccess.play(); }catch(e){}
+    const cell = findCalendarCellByDate(activeMarkDate);
+    if (cell) {
+      const off = cell.getBoundingClientRect();
+      emitParticles(off.left + off.width/2 + window.scrollX, off.top + off.height/2 + window.scrollY, '#ff7b7b', 20, 120, 4);
+    }
+
+    showModal({type:'info', title:'Removido', text:`Marca removida de ${activeMarkDate}`, buttons:[{label:'Fechar',handler:()=>closeModal(),className:'primary'}], autoClose:1500});
+  } else {
+    showModal({type:'warn', title:'Nada para remover', text:'Não havia marca nesse dia.', buttons:[{label:'Ok',handler:()=>closeModal()}]});
+  }
+};
+
+/* helper to locate calendar cell by date key */
+function findCalendarCellByDate(dateKey){
+  const calGrid = document.getElementById('calGrid');
+  const cells = calGrid.querySelectorAll('.cal-cell');
+  for(const c of cells){
+    if (c.__dateKey === dateKey) return c;
+  }
+  return null;
+}
+
+/* ============ Build days pills & render exercises ============ */
+function buildDays(){
+  daysRow.innerHTML = '';
+  days.forEach(d => {
+    const btn = document.createElement('button');
+    btn.className = 'pill' + (d === selectedDay ? ' active' : '');
+    btn.textContent = d.split(' – ')[0];
+    btn.onclick = () => { selectedDay = d; render(); btn.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'}); };
+    daysRow.appendChild(btn);
+  });
+  currentTitle.textContent = selectedDay;
+}
+
+function toggleDone(id, checkboxEl){
+  const data = loadData();
+  const today = new Date().toISOString().slice(0,10);
+  data[today] = data[today] || {};
+  data[today][id] = !data[today][id];
+  if (Object.keys(data[today]).length === 0) delete data[today];
+  saveData(data);
+  // visual pulse on exercise card
+  const card = checkboxEl.closest('.exercise');
+  if (card){
+    card.classList.add('pulse');
+    setTimeout(()=> card.classList.remove('pulse'), 480);
+  }
+  render();
+
+  // play check sound + tiny particles at checkbox
+  try{ soundCheck.currentTime = 0; soundCheck.play(); }catch(e){}
+  tinyBurstFromElement(checkboxEl);
+}
+
+function render(){
+  buildDays();
+  const list = plan[selectedDay] || [];
+  exerciseList.innerHTML = '';
+  const data = loadData();
+  const today = new Date().toISOString().slice(0,10);
+  const todayData = data[today] || {};
+
+  list.forEach(ex => {
+    const el = document.createElement('div');
+    el.className = 'exercise card';
+    el.innerHTML = `
+      <div class='ex-left'>
+        <div class='checkwrap'><input type='checkbox' ${todayData[ex.id] ? 'checked':''} data-id='${ex.id}' /></div>
+        <div class='ex-title'><strong>${ex.name}</strong><div class='meta'>${ex.sets} • <a class='video-link' href='#' data-web='${ex.video}' title='Abrir vídeo' target='_blank' rel='noopener'>Ver vídeo</a></div></div>
+      </div>
+      <div class='status'>${todayData[ex.id] ? 'feito' : 'pendente'}</div>
+    `;
+    exerciseList.appendChild(el);
+  });
+
+  // attach checkbox handlers (with sound + particles)
+  exerciseList.querySelectorAll('input[type=checkbox]').forEach(ch => {
+    // prevent duplicate handlers
+    ch.onchange = null;
+    ch.onchange = () => toggleDone(ch.dataset.id, ch);
+    // also allow clicking the checkwrap container to toggle
+    const wrap = ch.closest('.checkwrap');
+    if (wrap && !wrap.dataset.bound){
+      wrap.addEventListener('click', (ev)=> {
+        // do not double-trigger when clicking the input itself
+        if (ev.target.tagName.toLowerCase() === 'input') return;
+        ch.checked = !ch.checked;
+        ch.dispatchEvent(new Event('change', {bubbles:true}));
+      });
+      wrap.dataset.bound = '1';
+    }
+  });
+
+  // attach video link handlers
+  exerciseList.querySelectorAll('.video-link').forEach(a => {
+    a.onclick = (ev) => {
+      ev.preventDefault();
+      const url = a.dataset.web;
+      if (!url) { showModal({type:'warn', title:'Sem vídeo', text:'Nenhum vídeo disponível para este exercício.'}); return; }
+      // open in new tab or window
+      try { window.open(url, '_blank', 'noopener'); } catch(e){ showModal({type:'danger', title:'Erro', text:'Não foi possível abrir o vídeo.'}); }
+    };
+  });
+
+  // update progress
+  const total = list.length;
+  const done = list.filter(ex => (data[new Date().toISOString().slice(0,10)] || {})[ex.id]).length;
+  todayCount.textContent = `${done}/${total}`;
+  progressBar.style.width = (total ? Math.round(done/total*100) : 0) + '%';
+  updateMonthCount();
+  currentTitle.textContent = selectedDay;
+}
+
+/* ============ Export / Reset / Download ============ */
+document.getElementById('exportBtn').onclick = async () => {
+  const data = loadData();
+  try {
+    await navigator.clipboard.writeText(JSON.stringify(data));
+    showModal({type:'success', title:'Exportado', text:'Progresso copiado para a área de transferência', buttons:[{label:'Fechar',handler:()=>closeModal(),className:'primary'}], autoClose:1700});
+  } catch(e){
+    showModal({type:'danger', title:'Erro', text:'Não foi possível copiar para a área de transferência.', buttons:[{label:'Ok',handler:()=>closeModal()}]});
+  }
+};
+
+document.getElementById('resetBtn').onclick = () => {
+  showModal({
+    type:'warn',
+    title:'Resetar registros?',
+    text:'Isso irá apagar apenas os checkboxes de treino (calendário será preservado). Confirma?',
+    buttons:[
+      {label:'Cancelar', handler:()=>closeModal(), className:'ghost'},
+      {label:'Resetar', handler:()=>{
+         localStorage.removeItem(STORAGE_KEY);
+         render();
+         closeModal();
+         showModal({type:'success', title:'Resetado', text:'Checkboxes removidos (calendário preservado).', buttons:[{label:'Fechar',handler:()=>closeModal(),className:'primary'}], autoClose:1600});
+      }, className:'danger'}
+    ]
+  });
+};
+
+document.getElementById('downloadData').onclick = () => {
+  const data = { checks: loadData(), calendar: loadCal() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'treino_biel_backup.json'; a.click(); URL.revokeObjectURL(url);
+  showModal({type:'success', title:'Backup pronto', text:'Arquivo JSON gerado para download.', buttons:[{label:'Fechar',handler:()=>closeModal(),className:'primary'}], autoClose:1400});
+};
+
+/* ============ Timer ============ */
+let timer = null;
+document.getElementById('startTimer').onclick = () => {
+  if (timer){ clearInterval(timer); timer = null; document.getElementById('timerDisplay').textContent = '00:00'; return; }
+  let sec = 60;
+  document.getElementById('timerDisplay').textContent = '01:00';
+  timer = setInterval(()=> {
+    sec--;
+    document.getElementById('timerDisplay').textContent = String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');
+    if (sec <= 0){ clearInterval(timer); timer = null; showModal({type:'success', title:'Timer finalizado', text:'Descanso concluído!', buttons:[{label:'Fechar',handler:()=>closeModal(),className:'primary'}], autoClose:1500}); }
+  }, 1000);
+};
+
+/* ============ Calendar rendering & interactions ============ */
+const calGrid = document.getElementById('calGrid');
+const calMonthLabel = document.getElementById('calMonthLabel');
+const calPrev = document.getElementById('calPrev');
+const calNext = document.getElementById('calNext');
+const monthCompleted = document.getElementById('monthCompleted');
+const monthCountBtn = document.getElementById('monthCount');
+const tabProgram = document.getElementById('tab-program');
+const tabCalendar = document.getElementById('tab-calendar');
+const programArea = document.getElementById('program-area');
+const calendarArea = document.getElementById('calendar-area');
+
+function renderCalendar(date){
+  const calData = loadCal();
+  const data = loadData();
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  calGrid.innerHTML = '';
+  const first = new Date(year, month, 1);
+  const startWeekday = first.getDay(); // 0=Sun
+  for(let i=0;i<startWeekday;i++){
+    const empty = document.createElement('div'); empty.className='cal-cell'; calGrid.appendChild(empty);
+  }
+  const dim = new Date(year, month+1, 0).getDate();
+  let completedDays = 0;
+  for(let d=1; d<=dim; d++){
+    const dt = new Date(year, month, d);
+    const key = dt.toISOString().slice(0,10);
+    const cell = document.createElement('div'); cell.className='cal-cell';
+    cell.__dateKey = key;
+    const countCheck = (() => {
+      if (!data[key]) return 0;
+      let c = 0;
+      for (const k in data[key]) if (data[key][k]) c++;
+      return c;
+    })();
+    const mark = calData[key];
+    if (mark){ cell.classList.add('marked'); completedDays++; }
+    cell.innerHTML = `<div class="date">${d}</div><div style="margin-top:auto;color:var(--muted);font-size:12px">${countCheck>0?countCheck+' exercício(s)':''}</div>`;
+    if (mark){
+      const b = document.createElement('div'); b.className='cal-badge'; b.innerText = mark; cell.appendChild(b);
+    }
+    cell.addEventListener('click', ()=> {
+      openMarkModal(key);
+    });
+    calGrid.appendChild(cell);
+  }
+  const months = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  calMonthLabel.textContent = months[month] + ' ' + year;
+  monthCompleted.textContent = completedDays;
+  monthCountBtn.textContent = completedDays;
+}
+
+calPrev.addEventListener('click', ()=> { calDate = new Date(calDate.getFullYear(), calDate.getMonth()-1, 1); renderCalendar(calDate); });
+calNext.addEventListener('click', ()=> { calDate = new Date(calDate.getFullYear(), calDate.getMonth()+1, 1); renderCalendar(calDate); });
+
+tabProgram.addEventListener('click', ()=> { programArea.style.display='block'; calendarArea.style.display='none'; tabProgram.classList.add('active'); tabCalendar.classList.remove('active'); });
+tabCalendar.addEventListener('click', ()=> { programArea.style.display='none'; calendarArea.style.display='block'; tabProgram.classList.remove('active'); tabCalendar.classList.add('active'); renderCalendar(new Date()); });
+
+function updateMonthCount(){
+  const cal = loadCal();
+  const now = new Date();
+  const monthKey = now.toISOString().slice(0,7);
+  let daysCompleted = 0;
+  for (const k in cal){
+    if (k.startsWith(monthKey)) daysCompleted++;
+  }
+  monthCountBtn.textContent = daysCompleted;
+  monthCompleted.textContent = daysCompleted;
+}
+
+/* utility: emit sparkle when checkbox triggers and calendar saved
+   Also add subtle scale animation on the card is handled in toggleDone */
+function tinyBurstFromElement(el){
+  const rect = el.getBoundingClientRect();
+  const cx = rect.left + rect.width/2 + window.scrollX;
+  const cy = rect.top + rect.height/2 + window.scrollY;
+  emitParticles(cx, cy, '#ffd166', 14, 80, 3);
+}
+
+/* helper used earlier already */
+
+function findCalendarCellByDate(dateKey){
+  const calGrid = document.getElementById('calGrid');
+  const cells = calGrid.querySelectorAll('.cal-cell');
+  for(const c of cells){
+    if (c.__dateKey === dateKey) return c;
+  }
+  return null;
+}
+
+/* ============ Init ============ */
+(function init(){
+  buildDays();
+  render();
+  renderCalendar(new Date());
+  buildLetterButtons();
+  // accessibility: close modals on ESC
+  document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape') { closeMarkModal(); closeModal(); } });
+})();
+
+/* Close mark modal when clicking backdrop */
+document.getElementById('markModalBackdrop').addEventListener('click', (e)=>{ if (e.target === document.getElementById('markModalBackdrop')) closeMarkModal(); });
+document.getElementById('genericModalBackdrop').addEventListener('click', (e)=>{ if (e.target === document.getElementById('genericModalBackdrop')) closeModal(); });
+
+</script>
+</body>
+</html>
